@@ -30,54 +30,28 @@ fn drawBoard(solution: []const usize) void {
     std.debug.print("\n", .{});
 }
 
-fn solveNQueens(n: usize) usize {
-    var results: usize = 0;
-    var solution: [8]usize = undefined;
-    var solStack: [8]usize = undefined;
-    var stackSize: usize = 0;
+fn solveNQueens(n: usize, row: usize, solution: []usize, results: *usize) void {
+    if (row == n) {
+        results.* += 1;
+        drawBoard(solution);
+        return;
+    }
 
-    var row: usize = 0;
-    var col: usize = 0;
-
-    while (row < n) {
-        while (col < n) {
-            if (isValidMove(row, col, solution[0..row])) {
-                solStack[stackSize] = col;
-                stackSize += 1;
-                solution[row] = col;
-                row += 1;
-                col = 0;
-                break;
-            }
-            col += 1;
-        }
-
-        if (col == n) {
-            if (stackSize != 0) {
-                stackSize -= 1;
-                col = solStack[stackSize] + 1;
-                row -= 1;
-            } else {
-                break;
-            }
-        }
-
-        if (row == n) {
-            results += 1;
-            drawBoard(solution[0..n]);
-            row -= 1;
-            stackSize -= 1;
-            col = solStack[stackSize] + 1;
+    for (0..n) |col| {
+        if (isValidMove(row, col, solution)) {
+            solution[row] = col;
+            solveNQueens(n, row + 1, solution, results);
         }
     }
-    return results;
 }
 
 pub fn main() void {
     const n_values = [_]usize{4};
 
     for (n_values) |n| {
-        const res = solveNQueens(n);
-        std.debug.print("Total solutions count for {} queens on the chessboard ({}x{}): {}\n", .{ n, n, n, res });
+        var results: usize = 0;
+        var solution: [8]usize = undefined;
+        solveNQueens(n, 0, solution[0..n], &results);
+        std.debug.print("Found {} solution(s)! :) \n", .{results});
     }
 }
